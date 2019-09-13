@@ -13,6 +13,7 @@ builds:
   binary: my_cmd
   env:
     - CGO_ENABLED=0
+  main: ./my_cmd/main.go
 archives:
 -
   replacements:
