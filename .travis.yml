@@ -1,0 +1,23 @@
+language: go
+sudo: false
+env:
+  global:
+  - GO111MODULE=on
+git:
+  depth: false
+go:
+  - "1.12.9"
+  - "1.13"
+  - "tip"
+install:
+  - go get github.com/magefile/mage
+script:  
+  - mage -v test
+deploy:
+- provider: script
+  skip_cleanup: true
+  script: curl -sL https://git.io/goreleaser | bash
+  on:
+    tags: true
+    go: "1.13"
+    condition: $TRAVIS_OS_NAME = linux
