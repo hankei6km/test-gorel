@@ -1,0 +1,14 @@
+language: go
+sudo: false
+env:
+  global:
+  - GO111MODULE=on
+git:
+  depth: false
+go:
+  - "1.12.9"
+  - "1.13"
+install:
+  - go get github.com/magefile/mage
+script:  
+  - mage -v test
