@@ -5,7 +5,7 @@ import (
 )
 
 func foo(s string) string {
-	return "test-gorel:" + s
+	return "test-gorel: " + s
 }
 
 func main() {
