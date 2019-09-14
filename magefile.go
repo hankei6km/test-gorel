@@ -4,6 +4,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/magefile/mage/mg"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -24,9 +25,33 @@ var pkgs = []string{"my_cmd"}
 // var Default = Build
 
 func Snapshot() error {
-	// mg.Deps(InstallDeps)
+	mg.Deps(Credits)
 	fmt.Println("Building...")
 	cmd := exec.Command("goreleaser", "--snapshot", "--skip-publish", "--rm-dist")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	return cmd.Wait()
+}
+
+func Credits() error {
+	// mg.Deps(InstallDeps)
+	gocreditsVersion := "v0.0.6"
+	gocreditsFileName := fmt.Sprintf("gocredits_%s_linux_amd64", gocreditsVersion)
+	gocreditsUrl := fmt.Sprintf("https://github.com/Songmu/gocredits/releases/download/%s/%s.tar.gz", gocreditsVersion, gocreditsFileName)
+	creditsCmd := fmt.Sprintf(`curl -sL %s | tar --strip-components=1 --wildcards -xzf - "*/gocredits" && go mod tidy &&  ./gocredits ../my_cmd > ../CREDITS 2> /dev/null && rm gocredits`, gocreditsUrl)
+	tmpDir := filepath.Join(cwd, "tmp")
+
+	fmt.Println("Creating...")
+	if _, err := os.Stat(tmpDir); err != nil {
+		if err := os.Mkdir(tmpDir, os.ModePerm); err != nil {
+			return err
+		}
+	}
+	cmd := exec.Command("sh", "-c", creditsCmd)
+	cmd.Dir = filepath.Join(cwd, "tmp")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Start(); err != nil {
@@ -56,4 +81,5 @@ func Test() error {
 func Clean() {
 	fmt.Println("Cleaning...")
 	os.RemoveAll("dist")
+	os.RemoveAll("tmp")
 }
