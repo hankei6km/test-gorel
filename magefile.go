@@ -35,18 +35,6 @@ func Snapshot() error {
 	return cmd.Wait()
 }
 
-func Release() error {
-	// mg.Deps(InstallDeps)
-	fmt.Println("Building...")
-	cmd := exec.Command("goreleaser", "--snapshot", "--rm-dist")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-	return cmd.Wait()
-}
-
 func Test() error {
 	// mg.Deps(InstallDeps)
 	fmt.Println("Testing...")
