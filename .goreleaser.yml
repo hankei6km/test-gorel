@@ -10,7 +10,7 @@ before:
     # 以下、magefile.go で依存にしたほうがスッキリする?
     - mage clean
     - mage credits
-    - cp tmp/CREDITS .
+    # - cp tmp/CREDITS . work tree を cleanにするため build でコピー.
 builds:
 -
   # id: my_id
@@ -18,6 +18,8 @@ builds:
   env:
     - CGO_ENABLED=0
   main: ./my_cmd
+  hooks:
+    pre: cp tmp/CREDITS .
 archives:
 -
   replacements:
