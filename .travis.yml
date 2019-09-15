@@ -12,7 +12,7 @@ go:
 install:
   - go get github.com/magefile/mage
 script:  
-  - mage -v test
+  - mage test
 deploy:
 - provider: script
   skip_cleanup: true
