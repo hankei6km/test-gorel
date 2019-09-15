@@ -39,7 +39,14 @@ func Snapshot() error {
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-	return cmd.Wait()
+	if err := cmd.Wait(); err != nil {
+		return err
+	}
+
+	if err := os.Remove("CREDITS"); err != nil {
+		return err
+	}
+	return nil
 }
 
 func TmpDir() error {
@@ -91,7 +98,7 @@ func Credits() error {
 	gocreditsVersion := "v0.0.6"
 	gocreditsFileName := fmt.Sprintf("gocredits_%s_linux_amd64", gocreditsVersion)
 	gocreditsUrl := fmt.Sprintf("https://github.com/Songmu/gocredits/releases/download/%s/%s.tar.gz", gocreditsVersion, gocreditsFileName)
-	creditsCmd := fmt.Sprintf(`curl -sL %s | tar --strip-components=1 --wildcards -xzf - "*/gocredits" &&  ./gocredits ./%s > ../CREDITS 2> /dev/null && rm gocredits`, gocreditsUrl, mainDir)
+	creditsCmd := fmt.Sprintf(`curl -sL %s | tar --strip-components=1 --wildcards -xzf - "*/gocredits" &&  ./gocredits ./%s > ./CREDITS 2> /dev/null && rm gocredits`, gocreditsUrl, mainDir)
 
 	fmt.Println("Creating...")
 	cmd := exec.Command("sh", "-c", creditsCmd)
@@ -126,4 +133,5 @@ func Clean() {
 	fmt.Println("Cleaning...")
 	os.RemoveAll("dist")
 	os.RemoveAll("tmp")
+	os.Remove("CREDITS")
 }

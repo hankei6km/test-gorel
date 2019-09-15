@@ -7,6 +7,9 @@ before:
     - go mod tidy
     # you may remove this if you don't need go generate
     - go generate ./...
+    - mage clean
+    - mage credits
+    - cp tmp/CREDITS .
 builds:
 -
   # id: my_id
@@ -23,6 +26,10 @@ archives:
     386: i386
     amd64: x86_64
   format: zip
+  wrap_in_directory: false
+  files:
+    - LICENSE
+    - CREDITS
 checksum:
   name_template: 'checksums.txt'
 snapshot:
