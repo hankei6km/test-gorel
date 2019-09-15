@@ -14,5 +14,7 @@ func foo(s string) string {
 
 func main() {
 	fmt.Println(foo("check"))
+	n, _ := normalize("key: val")
+	fmt.Println(n)
 	fmt.Println("version:", version)
 }
