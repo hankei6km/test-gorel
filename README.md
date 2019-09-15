@@ -5,3 +5,4 @@
 - GoReleaser
 - mage
 - Travis CI
+- gocredits
