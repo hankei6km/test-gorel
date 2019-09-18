@@ -153,6 +153,29 @@ func GosumPrune() error {
 	return nil
 }
 
+func uniqCredits() error {
+	res := &strings.Builder{}
+	cmd := exec.Command("sh", "-c", "sha256sum CREDITS_* | sed -e 's/ .*//' | uniq | wc -l")
+	cmd.Dir = cwd
+	cmd.Stdout = res
+	cmd.Stderr = os.Stderr
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	if err := cmd.Wait(); err != nil {
+		return err
+	}
+	if res.String() == "1\n" {
+		files, err := filepath.Glob(filepath.Join(cwd, "CREDITS_*"))
+		if err != nil {
+			return err
+		}
+		os.Rename(files[0], "CREDITS")
+		cleanCredits()
+	}
+	return nil
+}
+
 func Credits() error {
 	mg.Deps(GosumPrune)
 
@@ -196,6 +219,9 @@ func Credits() error {
 			}
 		}
 	}
+	if err := uniqCredits(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -217,15 +243,23 @@ func Test() error {
 	return nil
 }
 
+func cleanCredits() error {
+	files, err := filepath.Glob(filepath.Join(cwd, "CREDITS_*"))
+	if err != nil {
+		return err
+	}
+	for _, f := range files {
+		if err := os.Remove(f); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func Clean() {
 	fmt.Println("Cleaning...")
 	os.RemoveAll("dist")
 	os.RemoveAll("tmp")
-	files, err := filepath.Glob(filepath.Join(cwd, "CREDITS*"))
-	if err != nil {
-		return
-	}
-	for _, f := range files {
-		os.Remove(f)
-	}
+	os.Remove("CREDITS")
+	cleanCredits()
 }
