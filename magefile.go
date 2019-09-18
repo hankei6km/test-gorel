@@ -28,6 +28,8 @@ var cwd = func() string {
 var mainDir = "my_cmd"
 var tmpDir = "tmp"
 
+var pruneDir = filepath.Join(cwd, tmpDir, "prune")
+
 var pkgs = []string{"my_cmd"}
 
 // Default target to run when none is specified
@@ -120,7 +122,6 @@ func GosumPrune() error {
 	// mg.Deps(Snapshot) GoReleaser の中から実行されるので、Snapshot には依存させない.
 	mg.Deps(TmpDir)
 	fmt.Println("Pruning go.sum by each built files...")
-	pruneDir := filepath.Join(cwd, tmpDir, "prune")
 	if _, err := os.Stat(pruneDir); err != nil {
 		if err := os.Mkdir(pruneDir, os.ModePerm); err != nil {
 			return err
@@ -172,7 +173,6 @@ func Credits() error {
 	}
 
 	fmt.Println("Writing CREDITS...")
-	pruneDir := filepath.Join(cwd, tmpDir, "prune")
 	dirs, err := ioutil.ReadDir(pruneDir)
 	if err != nil {
 		return err
