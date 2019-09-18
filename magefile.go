@@ -94,8 +94,8 @@ func distSuffix(d string) []string {
 	return s[len(s)-2:]
 }
 
-func gosumPrune(mods []string, outFile string) error {
-	in, err := os.Open("go.sum")
+func gosumPrune(inFile string, mods []string, outFile string) error {
+	in, err := os.Open(inFile)
 	if err != nil {
 		return err
 	}
@@ -147,7 +147,7 @@ func GosumPrune() error {
 					return err
 				}
 			}
-			gosumPrune(mods, filepath.Join(outDir, "go.sum"))
+			gosumPrune("go.sum", mods, filepath.Join(outDir, "go.sum"))
 		}
 	}
 	return nil
