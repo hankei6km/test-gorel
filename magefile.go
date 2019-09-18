@@ -117,7 +117,7 @@ func gosumPrune(mods []string, outFile string) error {
 }
 
 func GosumPrune() error {
-	mg.Deps(Snapshot)
+	// mg.Deps(Snapshot) GoReleaser の中から実行されるので、Snapshot には依存させない.
 	mg.Deps(TmpDir)
 	fmt.Println("Pruning go.sum by each built files...")
 	pruneDir := filepath.Join(cwd, tmpDir, "prune")
@@ -152,56 +152,50 @@ func GosumPrune() error {
 	return nil
 }
 
-func StripTest() error {
-	mg.Deps(TmpDir)
-	fmt.Println("Copying main src to tmp without _test.go...")
-
-	mainOnlyDir := filepath.Join(tmpDir, mainDir)
-	if _, err := os.Stat(mainOnlyDir); err == nil {
-		if err := os.RemoveAll(mainOnlyDir); err != nil {
-			return err
-		}
-	}
-
-	stripCmd := fmt.Sprintf(`tar --exclude="*_test.go" -cf - %s/ | tar --directory=%s -xf -`, mainDir, tmpDir)
-	cmd := exec.Command("sh", "-c", stripCmd)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-	if err := cmd.Wait(); err != nil {
-		return err
-	}
-	cmd = exec.Command("sh", "-c", "go mod init && go mod tidy")
-	cmd.Dir = mainOnlyDir
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-	if err := cmd.Wait(); err != nil {
-		return err
-	}
-	return nil
-}
-
 func Credits() error {
-	mg.Deps(StripTest)
+	mg.Deps(GosumPrune)
+
+	fmt.Println("Installing gocredits...")
 	gocreditsVersion := "v0.0.6"
 	gocreditsFileName := fmt.Sprintf("gocredits_%s_linux_amd64", gocreditsVersion)
 	gocreditsUrl := fmt.Sprintf("https://github.com/Songmu/gocredits/releases/download/%s/%s.tar.gz", gocreditsVersion, gocreditsFileName)
-	creditsCmd := fmt.Sprintf(`curl -sL %s | tar --strip-components=1 --wildcards -xzf - "*/gocredits" &&  ./gocredits ./%s > ./CREDITS 2> /dev/null && rm gocredits`, gocreditsUrl, mainDir)
-
-	fmt.Println("Creating...")
-	cmd := exec.Command("sh", "-c", creditsCmd)
+	installCmd := fmt.Sprintf(`curl -sL %s | tar --strip-components=1 --wildcards -xzf - "*/gocredits"`, gocreditsUrl)
+	cmd := exec.Command("sh", "-c", installCmd)
 	cmd.Dir = tmpDir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-	return cmd.Wait()
+	if err := cmd.Wait(); err != nil {
+		return err
+	}
+
+	fmt.Println("Writing CREDITS...")
+	pruneDir := filepath.Join(cwd, tmpDir, "prune")
+	dirs, err := ioutil.ReadDir(pruneDir)
+	if err != nil {
+		return err
+	}
+	for _, d := range dirs {
+		if d.IsDir() {
+			s := distSuffix(d.Name())
+			pOs := s[0]
+			pArch := s[1]
+			creditsCmd := fmt.Sprintf(`./gocredits prune/%s_%s > ../CREDITS_%s_%s`, pOs, pArch, pOs, pArch)
+			cmd := exec.Command("sh", "-c", creditsCmd)
+			cmd.Dir = tmpDir
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			if err := cmd.Start(); err != nil {
+				return err
+			}
+			if err := cmd.Wait(); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func Test() error {
@@ -226,5 +220,11 @@ func Clean() {
 	fmt.Println("Cleaning...")
 	os.RemoveAll("dist")
 	os.RemoveAll("tmp")
-	os.Remove("CREDITS")
+	files, err := filepath.Glob(filepath.Join(cwd, "CREDITS*"))
+	if err != nil {
+		return
+	}
+	for _, f := range files {
+		os.Remove(f)
+	}
 }
