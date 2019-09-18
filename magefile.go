@@ -182,6 +182,7 @@ func Credits() error {
 			s := distSuffix(d.Name())
 			pOs := s[0]
 			pArch := s[1]
+			// TODO: support replacement like as GoReleaser.
 			creditsCmd := fmt.Sprintf(`./gocredits prune/%s_%s > ../CREDITS_%s_%s`, pOs, pArch, pOs, pArch)
 			cmd := exec.Command("sh", "-c", creditsCmd)
 			cmd.Dir = tmpDir
