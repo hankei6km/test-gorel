@@ -3,10 +3,14 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/magefile/mage/mg"
 )
@@ -31,7 +35,6 @@ var pkgs = []string{"my_cmd"}
 // var Default = Build
 
 func Snapshot() error {
-	mg.Deps(Credits)
 	fmt.Println("Building...")
 	cmd := exec.Command("goreleaser", "--snapshot", "--skip-publish", "--rm-dist")
 	cmd.Stdout = os.Stdout
@@ -43,9 +46,9 @@ func Snapshot() error {
 		return err
 	}
 
-	if err := os.Remove("CREDITS"); err != nil {
-		return err
-	}
+	// if err := os.Remove("CREDITS"); err != nil {
+	// 	return err
+	// }
 	return nil
 }
 
@@ -54,6 +57,96 @@ func TmpDir() error {
 	if _, err := os.Stat(tmpDir); err != nil {
 		if err := os.Mkdir(tmpDir, os.ModePerm); err != nil {
 			return err
+		}
+	}
+	return nil
+}
+
+func modulesFromGoVersion(dist string) ([]string, error) {
+	r, w := io.Pipe()
+	go func() {
+		cmd := exec.Command("go", "version", "-m", dist)
+		cmd.Stdout = w
+		cmd.Stderr = os.Stderr
+		if err := cmd.Start(); err != nil {
+			w.CloseWithError(err)
+		}
+		w.CloseWithError(cmd.Wait())
+	}()
+	mods := []string{}
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		l := scanner.Text()
+		if strings.HasPrefix(l, "\t") {
+			t := strings.SplitN(l, "\t", 4)
+			if t[1] == "dep" {
+				mods = append(mods, t[2])
+			}
+		}
+	}
+	return mods, scanner.Err()
+}
+
+func distSuffix(d string) []string {
+	s := strings.Split(d, "_")
+	return s[len(s)-2:]
+}
+
+func gosumPrune(mods []string, outFile string) error {
+	in, err := os.Open("go.sum")
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+	out, err := os.Create(outFile)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+	scanner := bufio.NewScanner(in)
+	for scanner.Scan() {
+		l := scanner.Text()
+		t := strings.SplitN(l, " ", 2)[0]
+		for _, m := range mods {
+			if m == t {
+				fmt.Fprintln(out, l)
+			}
+		}
+	}
+	return scanner.Err()
+}
+
+func GosumPrune() error {
+	mg.Deps(Snapshot)
+	mg.Deps(TmpDir)
+	fmt.Println("Pruning go.sum by each built files...")
+	pruneDir := filepath.Join(cwd, tmpDir, "prune")
+	if _, err := os.Stat(pruneDir); err != nil {
+		if err := os.Mkdir(pruneDir, os.ModePerm); err != nil {
+			return err
+		}
+	}
+
+	distDir := filepath.Join(cwd, "dist")
+	dists, err := ioutil.ReadDir(distDir)
+	if err != nil {
+		return err
+	}
+
+	for _, d := range dists {
+		if d.IsDir() {
+			mods, err := modulesFromGoVersion(filepath.Join(distDir, d.Name()))
+			if err != nil {
+				return err
+			}
+			s := distSuffix(d.Name())
+			outDir := filepath.Join(pruneDir, s[0]+"_"+s[1])
+			if _, err := os.Stat(outDir); err != nil {
+				if err := os.Mkdir(outDir, os.ModePerm); err != nil {
+					return err
+				}
+			}
+			gosumPrune(mods, filepath.Join(outDir, "go.sum"))
 		}
 	}
 	return nil

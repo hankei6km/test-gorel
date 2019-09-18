@@ -9,8 +9,6 @@ before:
     - go generate ./...
     # 以下、magefile.go で依存にしたほうがスッキリする?
     - mage clean
-    - mage credits
-    # - cp tmp/CREDITS . work tree を cleanにするため build でコピー.
 builds:
 -
   # id: my_id
@@ -19,7 +17,7 @@ builds:
     - CGO_ENABLED=0
   main: ./my_cmd
   hooks:
-    pre: cp tmp/CREDITS .
+    post: touch dist/test-gorel_linux_386/text.txt
 archives:
 -
   replacements:
@@ -32,7 +30,7 @@ archives:
   wrap_in_directory: false
   files:
     - LICENSE
-    - CREDITS
+    # - CREDITS*
 checksum:
   name_template: 'checksums.txt'
 snapshot:
