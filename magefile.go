@@ -64,26 +64,9 @@ func TmpDir() error {
 func Credits() error {
 	mg.Deps(TmpDir)
 
-	fmt.Println("Installing gocredits...")
-	gocreditsVersion := "v0.0.6"
-	gocreditsFileName := fmt.Sprintf("gocredits_%s_linux_amd64", gocreditsVersion)
-	gocreditsUrl := fmt.Sprintf("https://github.com/Songmu/gocredits/releases/download/%s/%s.tar.gz", gocreditsVersion, gocreditsFileName)
-	installCmd := fmt.Sprintf(`curl -sL %s | tar --strip-components=1 --wildcards -xzf - "*/gocredits"`, gocreditsUrl)
-	cmd := exec.Command("sh", "-c", installCmd)
-	cmd.Dir = tmpDir
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-	if err := cmd.Wait(); err != nil {
-		return err
-	}
-
 	fmt.Println("Writing CREDITS...")
 	b := ac.NewOutputBuilder().
-		GoSumFile(filepath.Join(cwd, "go.sum")).
-		Prog(filepath.Join(cwd, tmpDir, "gocredits"))
+		GoSumFile(filepath.Join(cwd, "go.sum"))
 	d := ac.NewDistBuilder().
 		DistDir(filepath.Join(cwd, "dist")).
 		WorkDir(workDir).
