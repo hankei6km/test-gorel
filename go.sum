@@ -1,7 +1,9 @@
+github.com/Songmu/gocredits v0.0.7 h1:iM9NiSfCqA4em8M+gmL6vjlEvWg3N+RzEI0yxBd7TrY=
+github.com/Songmu/gocredits v0.0.7/go.mod h1:5OhTh3YD/zUrdWAYuhMO2n3m7Ql+xRAnRLIGUEFABpQ=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/hankei6km/go-ac v0.0.0-20190921131411-b318f7137c97 h1:w1zZFfQBQ0/cve4RAjOENitH1uPZxG5wikwnU1t35qc=
-github.com/hankei6km/go-ac v0.0.0-20190921131411-b318f7137c97/go.mod h1:R7VhcETuOkPWpPASdVNAH3hWEIQMxX7CBxD4B9dG/bk=
+github.com/hankei6km/go-ac v0.1.1 h1:1cIDVUXubUGmSLNCQd+hdimSkKKRLvohLysgj1fcYSM=
+github.com/hankei6km/go-ac v0.1.1/go.mod h1:9ZTtzl/OWWiUXLXVreoG5YjeNFO+KS9IhYR1JAij6ws=
 github.com/magefile/mage v1.9.0 h1:t3AU2wNwehMCW97vuqQLtw6puppWXHO+O2MHo5a50XE=
 github.com/magefile/mage v1.9.0/go.mod h1:z5UZb/iS3GoOSn0JgWuiw7dxlurVYTu+/jHXqQg881A=
 github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=
