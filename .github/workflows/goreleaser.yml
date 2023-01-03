@@ -1,0 +1,57 @@
+name: goreleaser
+
+on:
+  push:
+    tags:
+      - "*"
+
+permissions:
+  contents: write
+  # packages: write
+  # issues: write
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - run: git fetch --force --tags
+
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v3
+        with:
+          go-version: "stable"
+          cache: true
+
+      - name: Install mage
+        run: |
+          mkdir -p /tmp/mage && cd /tmp/mage
+          gh api repos/magefile/mage/releases/latest --jq '.assets[].browser_download_url' | grep _Linux-64bit.tar.gz | xargs -I '{}' curl -sL '{}' | tar -zxf -
+          cp mage "/usr/local/bin/mage"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Test with mage
+        run: mage test
+
+      - name: Generate release note
+        run: |
+          mkdir -p /tmp/relnote
+          gh api /repos/{owner}/{repo}/releases/generate-notes -f tag_name="${REF_NAME}" --jq .body > /tmp/relnote/out.txt
+        env:
+          REF_NAME: ${{github.ref_name}}
+
+      - uses: goreleaser/goreleaser-action@v4
+        with:
+          # either 'goreleaser' (default) or 'goreleaser-pro':
+          distribution: goreleaser
+          version: latest
+          # https://qiita.com/progrhyme/items/e2fb3ceb772430bea4d9
+          args: release --rm-dist --release-notes=/tmp/relnote/out.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Your GoReleaser Pro key, if you are using the 'goreleaser-pro'
+          # distribution:
+          # GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
