@@ -41,6 +41,7 @@ jobs:
           mkdir -p /tmp/relnote
           gh api "/repos/{owner}/{repo}/releases/generate-notes" -f tag_name="${REF_NAME}" --jq .body > /tmp/relnote/out.txt
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REF_NAME: ${{github.ref_name}}
 
       - uses: goreleaser/goreleaser-action@v4
