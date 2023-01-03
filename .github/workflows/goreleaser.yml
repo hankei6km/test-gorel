@@ -19,7 +19,7 @@ jobs:
           fetch-depth: 0
       - run: git fetch --force --tags
 
-      - name: Setup Go ${{ matrix.go-version }}
+      - name: Setup Go stable
         uses: actions/setup-go@v3
         with:
           go-version: "stable"
@@ -39,7 +39,7 @@ jobs:
       - name: Generate release note
         run: |
           mkdir -p /tmp/relnote
-          gh api /repos/{owner}/{repo}/releases/generate-notes -f tag_name="${REF_NAME}" --jq .body > /tmp/relnote/out.txt
+          gh api "/repos/{owner}/{repo}/releases/generate-notes" -f tag_name="${REF_NAME}" --jq .body > /tmp/relnote/out.txt
         env:
           REF_NAME: ${{github.ref_name}}
 
