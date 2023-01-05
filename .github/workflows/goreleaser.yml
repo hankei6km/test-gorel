@@ -50,7 +50,7 @@ jobs:
           distribution: goreleaser
           version: latest
           # https://qiita.com/progrhyme/items/e2fb3ceb772430bea4d9
-          args: release --rm-dist --release-notes=/tmp/relnote/out.txt
+          args: release --rm-dist -p 1 --release-notes=/tmp/relnote/out.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Your GoReleaser Pro key, if you are using the 'goreleaser-pro'
